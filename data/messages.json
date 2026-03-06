@@ -1,0 +1,18 @@
+[
+  {
+    "id": "MSG-1772811550565",
+    "hash": "F528764D",
+    "ip": "127.0.0.1",
+    "content": "test\n",
+    "timestamp": "2026/3/6 23:39:10",
+    "hasTask": true
+  },
+  {
+    "id": "MSG-1772809635912",
+    "hash": "F528764D",
+    "ip": "127.0.0.1",
+    "content": "你好\n",
+    "timestamp": "2026/3/6 23:07:15",
+    "hasTask": false
+  }
+]

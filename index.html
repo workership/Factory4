@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>智秧工厂-寒地立体育秧数字化决策看板</title>
+    <script>
+      // Prevent some libraries from trying to overwrite window.fetch which is read-only in some environments
+      if (window.fetch) {
+        const originalFetch = window.fetch;
+        Object.defineProperty(window, 'fetch', {
+          configurable: false,
+          enumerable: true,
+          get: () => originalFetch,
+          set: () => { console.warn('Attempted to overwrite window.fetch - blocked.'); }
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

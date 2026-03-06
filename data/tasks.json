@@ -1,0 +1,38 @@
+[
+  {
+    "id": "TASK-110539",
+    "seedlings": 100,
+    "type": "东农425",
+    "area": 1000,
+    "status": "completed",
+    "progress": 100,
+    "timestamp": "2026/3/6 23:07:42",
+    "totalCost": 2780.466173515982,
+    "details": {
+      "water": 0.72,
+      "electricity": 134.04999999999998,
+      "seeds": 1201,
+      "soil": 1360,
+      "oil": 15.6,
+      "fixed": 69.09617351598173
+    }
+  },
+  {
+    "id": "TASK-473325",
+    "seedlings": 100,
+    "type": "东农425",
+    "area": 1000,
+    "status": "completed",
+    "progress": 100,
+    "timestamp": "2026/3/6 23:07:23",
+    "totalCost": 2780.466173515982,
+    "details": {
+      "water": 0.72,
+      "electricity": 134.04999999999998,
+      "seeds": 1201,
+      "soil": 1360,
+      "oil": 15.6,
+      "fixed": 69.09617351598173
+    }
+  }
+]

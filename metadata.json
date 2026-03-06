@@ -1,0 +1,5 @@
+{
+  "name": "智秧工厂 - 寒地立体育秧数字化决策看板",
+  "description": "基于工业4.0数字孪生技术的生产仿真监控与决策平台，集成非线性损耗模型、OEE核心指标及XGBoost稳健性分析。",
+  "requestFramePermissions": []
+}
