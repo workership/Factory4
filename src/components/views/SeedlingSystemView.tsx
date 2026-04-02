@@ -61,44 +61,85 @@ export function SeedlingSystemView() {
     rotationSpeed: 5 // rpm
   });
 
-  // XGBoost Mock Algorithm
+  const [sensorInput, setSensorInput] = useState({
+    currentTemp: 18.6,
+    currentHumidity: 87.8,
+    currentCO2: 620.0,
+    currentLight: 0.0,
+  });
+
+  const [prediction, setPrediction] = useState<{
+    targetTemp: number;
+    humidityDeficit: number;
+    co2Set: number;
+    lightSet: number;
+  } | null>(null);
+
+  const [predictionStatus, setPredictionStatus] = useState('Loading model...');
+
+  useEffect(() => {
+    const fetchPrediction = async () => {
+      setPredictionStatus('Loading model...');
+      try {
+        const response = await fetch('/api/predict');
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.error || '预测请求失败');
+        }
+        setSensorInput(data.input);
+        setPrediction(data.prediction);
+        setPredictionStatus('模型已加载');
+      } catch (err) {
+        console.error('Predict API error:', err);
+        setPredictionStatus('预测失败');
+      }
+    };
+
+    fetchPrediction();
+    const interval = setInterval(fetchPrediction, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      const sensitivityFactor = modelMetrics.sensitivity * 2;
-      const newEnv = {
-        temp: env.temp + (Math.random() - 0.5) * 0.4 * sensitivityFactor,
-        light: env.light + (Math.random() - 0.5) * 15 * sensitivityFactor,
-        humidity: env.humidity + (Math.random() - 0.5) * 0.8 * sensitivityFactor,
-        soilMoisture: env.soilMoisture - 0.05
-      };
-      setEnv(newEnv);
+      setEnv(prevEnv => ({
+        temp: Math.max(15, Math.min(35, prevEnv.temp + (Math.random() - 0.5) * 0.4)),
+        light: Math.max(0, Math.min(1000, prevEnv.light + (Math.random() - 0.5) * 15)),
+        humidity: Math.max(30, Math.min(90, prevEnv.humidity + (Math.random() - 0.5) * 0.8)),
+        soilMoisture: Math.max(15, Math.min(60, prevEnv.soilMoisture + (Math.random() - 0.5) * 0.6))
+      }));
 
-      // XGBoost Decision Logic with Overrides
-      const newActions = {
-        heating: overrides.heating !== null ? overrides.heating : newEnv.temp < thresholds.temp,
-        lighting: overrides.lighting !== null ? overrides.lighting : newEnv.light < thresholds.light,
-        humidifying: overrides.humidifying !== null ? overrides.humidifying : newEnv.humidity < thresholds.humidity,
-        irrigating: overrides.irrigating !== null ? overrides.irrigating : newEnv.soilMoisture < thresholds.moisture,
-        rotationSpeed: newEnv.light > 550 ? 7 : 4
-      };
-      setActions(newActions);
-      
       setModelMetrics(prev => ({
         ...prev,
-        confidence: 0.97 + Math.random() * 0.02,
+        confidence: Math.max(0.92, Math.min(0.99, prev.confidence + (Math.random() - 0.5) * 0.01)),
         latency: 10 + Math.floor(Math.random() * 5)
       }));
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [env, thresholds, overrides, modelMetrics.sensitivity]);
+  }, []);
+
+  useEffect(() => {
+    const targetLight = prediction ? 200 + prediction.lightSet * 80 : thresholds.light;
+    const humidityTarget = prediction ? thresholds.humidity - prediction.humidityDeficit : thresholds.humidity;
+
+    setActions({
+      heating: overrides.heating !== null ? overrides.heating : env.temp < (prediction ? prediction.targetTemp : thresholds.temp),
+      lighting: overrides.lighting !== null ? overrides.lighting : env.light < targetLight,
+      humidifying: overrides.humidifying !== null ? overrides.humidifying : env.humidity < humidityTarget,
+      irrigating: overrides.irrigating !== null ? overrides.irrigating : env.soilMoisture < thresholds.moisture,
+      rotationSpeed: env.light > 550 ? 7 : 4
+    });
+  }, [env, thresholds, overrides, prediction]);
+
+  const normalize = (value: number, min: number, max: number) => Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
 
   const radarData = [
-    { subject: '温度', A: (env.temp / 30) * 100, fullMark: 100 },
-    { subject: '光照', A: (env.light / 1000) * 100, fullMark: 100 },
-    { subject: '湿度', A: env.humidity, fullMark: 100 },
-    { subject: '水分', A: env.soilMoisture * 2, fullMark: 100 },
-    { subject: '转速', A: actions.rotationSpeed * 10, fullMark: 100 },
+    { subject: '温度', A: normalize(env.temp, 15, 35), B: normalize(prediction ? prediction.targetTemp : thresholds.temp, 15, 35), fullMark: 100 },
+    { subject: '光照', A: normalize(env.light, 0, 1000), B: normalize(prediction ? 200 + prediction.lightSet * 80 : thresholds.light, 0, 1000), fullMark: 100 },
+    { subject: '湿度', A: normalize(env.humidity, 30, 90), B: normalize(prediction ? thresholds.humidity - prediction.humidityDeficit : thresholds.humidity, 30, 90), fullMark: 100 },
+    { subject: '水分', A: normalize(env.soilMoisture, 15, 60), B: normalize(thresholds.moisture, 15, 60), fullMark: 100 },
+    { subject: '转速', A: normalize(actions.rotationSpeed, 1, 8), B: normalize(7, 1, 8), fullMark: 100 },
   ];
 
   return (
@@ -139,11 +180,18 @@ export function SeedlingSystemView() {
                   <PolarAngleAxis dataKey="subject" tick={{ fill: '#6b7280', fontSize: 10, fontWeight: 'bold' }} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} hide />
                   <Radar
-                    name="Environment"
+                    name="当前"
                     dataKey="A"
+                    stroke="#3b82f6"
+                    fill="#3b82f6"
+                    fillOpacity={0.2}
+                  />
+                  <Radar
+                    name="目标"
+                    dataKey="B"
                     stroke="#8b5cf6"
                     fill="#8b5cf6"
-                    fillOpacity={0.3}
+                    fillOpacity={0.1}
                   />
                 </RadarChart>
               </ResponsiveContainer>
@@ -264,35 +312,66 @@ export function SeedlingSystemView() {
 
         {/* Right: Metrics & Insights */}
         <div className="col-span-3 flex flex-col gap-6">
-          <div className="bg-gradient-to-br from-purple-600 to-indigo-800 rounded-3xl p-8 text-white space-y-6 shadow-xl shadow-purple-600/20">
-            <div className="flex items-center gap-2 opacity-80">
-              <Binary className="w-5 h-5" />
-              <h3 className="font-bold text-sm uppercase tracking-widest">系统增益分析</h3>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xs opacity-70">预估生产效率提升</div>
-              <div className="text-4xl font-black">+{modelMetrics.gain}%</div>
-            </div>
-            <div className="pt-4 border-t border-white/10 space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] opacity-60 uppercase font-bold">能耗优化率</span>
-                <span className="text-sm font-bold">18.4%</span>
+          <div className="bg-gradient-to-br from-purple-600 to-indigo-800 rounded-3xl p-6 text-white space-y-4 shadow-xl shadow-purple-600/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 opacity-80">
+                <Binary className="w-4 h-4" />
+                <h3 className="font-bold text-xs uppercase tracking-widest">智能预测与增益分析</h3>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] opacity-60 uppercase font-bold">秧苗健壮度提升</span>
-                <span className="text-sm font-bold">12.5%</span>
+              <span className="text-[9px] text-white/60">{predictionStatus}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="text-[9px] opacity-60 uppercase font-bold">效率提升</div>
+                <div className="text-2xl font-black">+{modelMetrics.gain}%</div>
+              </div>
+              <div>
+                <div className="text-[9px] opacity-60 uppercase font-bold">目标温度</div>
+                <div className="text-2xl font-black">{prediction ? `${prediction.targetTemp.toFixed(1)}°C` : '--'}</div>
+              </div>
+              <div>
+                <div className="text-[9px] opacity-60 uppercase font-bold">能耗优化</div>
+                <div className="text-lg font-bold">18.4%</div>
+              </div>
+              <div>
+                <div className="text-[9px] opacity-60 uppercase font-bold">补光设定</div>
+                <div className="text-2xl font-black">{prediction ? `${prediction.lightSet.toFixed(1)}` : '--'}</div>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 bg-[#161B26] border border-white/5 rounded-3xl p-8 space-y-6">
+          <div className="bg-[#161B26] border border-white/5 rounded-3xl p-6 space-y-4">
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+              <Sprout className="w-4 h-4" /> 预测调控目标
+            </h3>
+            <div className="grid grid-cols-2 gap-3 text-[11px]">
+              <div className="rounded-xl bg-white/5 p-3 space-y-1">
+                <div className="text-gray-400 uppercase font-bold">湿度赤字</div>
+                <div className="text-lg font-black text-cyan-400">{prediction ? `${prediction.humidityDeficit.toFixed(2)}` : '--'}</div>
+              </div>
+              <div className="rounded-xl bg-white/5 p-3 space-y-1">
+                <div className="text-gray-400 uppercase font-bold">CO2 设定</div>
+                <div className="text-lg font-black text-emerald-400">{prediction ? `${prediction.co2Set.toFixed(1)}` : '--'}</div>
+              </div>
+              <div className="rounded-xl bg-white/5 p-3 space-y-1">
+                <div className="text-gray-400 uppercase font-bold">实时温度</div>
+                <div className="text-lg font-black text-orange-400">{sensorInput.currentTemp.toFixed(1)}°C</div>
+              </div>
+              <div className="rounded-xl bg-white/5 p-3 space-y-1">
+                <div className="text-gray-400 uppercase font-bold">实时光照</div>
+                <div className="text-lg font-black text-yellow-400">{sensorInput.currentLight.toFixed(0)}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 bg-[#161B26] border border-white/5 rounded-3xl p-6 space-y-4">
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-blue-400" /> 系统运行统计
             </h3>
-            <div className="space-y-6">
-              <MetricProgress label="逻辑迭代次数" value={modelMetrics.iterations} max={2000} color="blue" />
-              <MetricProgress label="控制偏差率" value={0.042} max={0.1} color="rose" inverse />
-              <MetricProgress label="特征覆盖率" value={98.5} max={100} color="emerald" />
+            <div className="space-y-4">
+              <MetricProgress label="逻辑迭代" value={modelMetrics.iterations} max={2000} color="blue" />
+              <MetricProgress label="控制偏差" value={0.042} max={0.1} color="rose" inverse />
+              <MetricProgress label="特征覆盖" value={98.5} max={100} color="emerald" />
             </div>
           </div>
         </div>

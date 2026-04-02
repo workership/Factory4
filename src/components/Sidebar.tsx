@@ -27,7 +27,7 @@ const navItems = [
   { id: 'monitoring', label: '设备监控', icon: Activity },
   { id: 'seedling-system', label: '育秧系统', icon: Cpu },
   { id: 'scheduling', label: '生产排产', icon: Calendar },
-  { id: 'feedback', label: '留言', icon: MessageSquareText },
+  { id: 'feedback', label: 'AI 对话', icon: MessageSquareText },
 ];
 
 export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {

@@ -105,6 +105,12 @@ export interface Task {
   };
 }
 
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export interface FeedbackMessage {
   id: string;
   hash: string;
