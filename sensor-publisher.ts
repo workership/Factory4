@@ -7,9 +7,10 @@ import { HttpsProxyAgent } from "https-proxy-agent";
  */
 
 // 为了本地测试方便，这里临时换成了 EMQX 的公共测试 MQTT Broker。
-// 等你的 VPS 搭建好后，再换回 "wss://seedingfactory.aisa/mqtt"
-const MQTT_BROKER = process.env.MQTT_BROKER || "wss://broker.emqx.io:8084/mqtt"; 
-const MQTT_TOPIC = process.env.MQTT_TOPIC || "sensors/test/data"; 
+// 等你的 VPS 搭建好后，再换回 "wss://seedingfactory.asia/mqtt"
+//const MQTT_BROKER = process.env.MQTT_BROKER || "wss://broker.emqx.io:8084/mqtt";
+const MQTT_BROKER = process.env.MQTT_BROKER || "wss://seedingfactory.asia/mqtt";
+const MQTT_TOPIC = process.env.MQTT_TOPIC || "sensors/test/data";
 const MQTT_USERNAME = process.env.MQTT_USERNAME || undefined;
 const MQTT_PASSWORD = process.env.MQTT_PASSWORD || undefined;
 
@@ -28,7 +29,7 @@ const client = mqtt.connect(MQTT_BROKER, {
   clean: true,
   username: MQTT_USERNAME,
   password: MQTT_PASSWORD,
-  reconnectPeriod: 5000, 
+  reconnectPeriod: 5000,
   // 为底层的 ws 连接传递额外参数
   wsOptions: {
     agent: proxyAgent,           // 挂载代理
@@ -38,14 +39,14 @@ const client = mqtt.connect(MQTT_BROKER, {
 
 client.on("connect", () => {
   console.log(`[✅ Publisher] 成功连接到 MQTT Broker!`);
-  
+
   setInterval(() => {
     const sensorPayload = {
       temperature: parseFloat((18 + Math.random() * 6).toFixed(1)),
-      humidity: parseFloat((70 + Math.random() * 20).toFixed(1)),  
-      co2: parseFloat((420 + Math.random() * 260).toFixed(1)),     
-      light: parseFloat((Math.random() * 1000).toFixed(1)),        
-      timestamp: new Date().toISOString()                           
+      humidity: parseFloat((70 + Math.random() * 20).toFixed(1)),
+      co2: parseFloat((420 + Math.random() * 260).toFixed(1)),
+      light: parseFloat((Math.random() * 1000).toFixed(1)),
+      timestamp: new Date().toISOString()
     };
 
     const message = JSON.stringify(sensorPayload);
@@ -58,7 +59,7 @@ client.on("connect", () => {
       }
     });
 
-  }, 3000); 
+  }, 3000);
 });
 
 client.on("error", (error) => {
