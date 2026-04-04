@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { logAI } from "../services/logger";
 
 const router = Router();
 
@@ -19,6 +20,9 @@ const SYSTEM_PROMPT = `你是本系统专属的「寒地水稻数字孪生工厂
 3. 语气专业且精炼：不要说废话，以高级农业工程师或研究员的身份解答，必要时用数据或指标辅助，态度友好但不过分活泼，体现严谨的农业科学素养。`;
 
 router.post("/", async (req, res) => {
+  const clientIp = req.headers["x-forwarded-for"]?.toString().split(",")[0].trim()
+               || req.socket.remoteAddress
+               || "unknown";
   const { content, history } = req.body;
   if (!content || typeof content !== "string") {
     return res.status(400).json({ error: "缺少聊天内容" });
@@ -62,6 +66,8 @@ router.post("/", async (req, res) => {
 
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content || "抱歉，未能获得有效回答。";
+    // 写入 AI 问答日志
+    logAI(clientIp, content, reply.trim());
     res.json({ reply: reply.trim() });
   } catch (error) {
     console.error("Doubao chat error:", error);

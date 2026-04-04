@@ -12,7 +12,6 @@ import {
   Cpu,
   LogOut,
   MessageSquareText,
-  Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -34,8 +33,8 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   return (
     <aside className="w-64 bg-[#0F1219] border-r border-white/5 flex flex-col h-screen sticky top-0">
       <div className="p-6 flex items-center gap-3">
-        <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-blue-600/20">
-          <Zap className="w-5 h-5 fill-current" />
+        <div className="w-9 h-9 bg-blue-600/10 rounded-xl flex items-center justify-center shadow-xl shadow-blue-600/20">
+          <img src="/icon_.svg" alt="icon" className="w-6 h-6" />
         </div>
         <div className="flex flex-col">
           <h1 className="text-lg font-black text-white tracking-tight leading-none">智秧工厂</h1>

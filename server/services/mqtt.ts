@@ -1,6 +1,7 @@
 import * as mqtt from "mqtt";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { sensorData } from "../state";
+import { logMqtt } from "./logger";
 
 // 为了方便本地测试，默认改为了 EMQX 的公共测试 MQTT Broker。
 // 等你部署到 VPS 后，可以通过环境变量设置 MQTT_BROKER 为你的真实地址 (比如 wss://seedingfactory.asia// 现在咱们已经把 Broker 内嵌到了 Node.js 中
@@ -41,6 +42,8 @@ export function initMqtt() {
   mqttClient.on("message", (topic, message) => {
     const payload = message.toString();
     console.log(`📨 [MQTT] ${topic}: ${payload}`);
+    // 写入 MQTT 数据日志
+    logMqtt(topic, payload);
     try {
       const data = JSON.parse(payload);
       if (typeof data === "object" && data !== null) {

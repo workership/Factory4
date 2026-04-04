@@ -6,9 +6,11 @@ import { initMqtt, MQTT_BROKER } from "./server/services/mqtt";
 import { initCronJobs } from "./server/services/cron";
 import { initDataDirs, rootDir } from "./server/config";
 import { attachMqttBroker, aedes } from "./server/services/broker";
+import { initLogDirs, logAccess } from "./server/services/logger";
 
 async function startServer() {
   initDataDirs();
+  initLogDirs();
   initCronJobs();
 
   const app = express();
@@ -16,7 +18,17 @@ async function startServer() {
 
   app.use(express.json());
 
+  // 访问日志中间件：记录每个进入 /api 的请求
+  app.use("/api", (req, _res, next) => {
+    const ip = req.headers["x-forwarded-for"]?.toString().split(",")[0].trim()
+             || req.socket.remoteAddress
+             || "unknown";
+    logAccess(ip, req.method, req.originalUrl);
+    next();
+  });
+
   app.use("/api", apiRouter);
+
 
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({ server: { middlewareMode: true }, appType: "spa" });

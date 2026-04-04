@@ -22,3 +22,4 @@ export function initDataDirs() {
     fs.writeFileSync(MESSAGES_FILE, JSON.stringify([]));
   }
 }
+
