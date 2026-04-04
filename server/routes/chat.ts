@@ -6,9 +6,8 @@ const DOUBAO_API_KEY = "83692209-5668-4f18-8d9e-bce96b5c9a24";
 const DOUBAO_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3/chat/completions";
 
 // 注意：火山引擎（豆包）需要使用 Endpoint ID 作为 model 参数。
-// 用户提供的 ID 为 0d032d6e-eade-4c13-b7ef-0188ebb57532
-// 如果调用失败，也可以尝试填入控制台显示的最新模型字面量如 'doubao-seed-2-0-pro-260215'
-const MODEL_ENDPOINT_ID = process.env.DOUBAO_ENDPOINT_ID || "0d032d6e-eade-4c13-b7ef-0188ebb57532"; 
+// 经测试，UUID 连接报错，已直接替换为你在截图中使用的可用字面量模型名。
+const MODEL_ENDPOINT_ID = process.env.DOUBAO_ENDPOINT_ID || "doubao-seed-2-0-pro-260215"; 
 
 const SYSTEM_PROMPT = `你是一个农业育秧专家，请以专业、简明、友好的方式回答用户关于育秧、育苗、温室管理、营养调控、病虫害防治等方面的问题。`;
 
