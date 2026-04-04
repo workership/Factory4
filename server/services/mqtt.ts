@@ -3,8 +3,9 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 import { sensorData } from "../state";
 
 // 为了方便本地测试，默认改为了 EMQX 的公共测试 MQTT Broker。
-// 等你部署到 VPS 后，可以通过环境变量设置 MQTT_BROKER 为你的真实地址 (比如 wss://seedingfactory.aisa/mqtt )
-export const MQTT_BROKER = process.env.MQTT_BROKER || "wss://broker.emqx.io:8084/mqtt";
+// 等你部署到 VPS 后，可以通过环境变量设置 MQTT_BROKER 为你的真实地址 (比如 wss://seedingfactory.asia// 现在咱们已经把 Broker 内嵌到了 Node.js 中
+// 所以后端的订阅端不需要绕远路连公网，直接连自己本地开的 Broker 即可。
+export const MQTT_BROKER = process.env.MQTT_BROKER || "ws://127.0.0.1:3000/mqtt";
 
 export function initMqtt() {
   const MQTT_TOPIC = process.env.MQTT_TOPIC || "sensors/#";
