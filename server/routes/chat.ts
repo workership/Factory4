@@ -1,20 +1,14 @@
 import { Router } from "express";
-import { GoogleGenAI } from "@google/genai";
-import { HttpsProxyAgent } from "https-proxy-agent";
 
 const router = Router();
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyBCVY0eJPCuyXTzjO7XVgDcgqBn7Tup3IM";
-const GEMINI_BASE_URL = process.env.GEMINI_NEXT_GEN_API_BASE_URL || process.env.GEMINI_API_BASE_URL || "https://generativelanguage.googleapis.com";
-process.env.GEMINI_NEXT_GEN_API_BASE_URL = GEMINI_BASE_URL;
+const DOUBAO_API_KEY = "83692209-5668-4f18-8d9e-bce96b5c9a24";
+const DOUBAO_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3/chat/completions";
 
-const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
-const proxyAgent = proxyUrl ? new HttpsProxyAgent(proxyUrl) : undefined;
-const fetchWithProxy = proxyAgent
-  ? (input: RequestInfo | URL, init?: RequestInit & { dispatcher?: unknown }) => globalThis.fetch(input, { ...init, dispatcher: proxyAgent } as any)
-  : globalThis.fetch;
-
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY, fetch: proxyAgent ? fetchWithProxy : undefined } as any);
+// 注意：火山引擎（豆包）需要使用 Endpoint ID 作为 model 参数。
+// 用户提供的 ID 为 0d032d6e-eade-4c13-b7ef-0188ebb57532
+// 如果调用失败，也可以尝试填入控制台显示的最新模型字面量如 'doubao-seed-2-0-pro-260215'
+const MODEL_ENDPOINT_ID = process.env.DOUBAO_ENDPOINT_ID || "0d032d6e-eade-4c13-b7ef-0188ebb57532"; 
 
 const SYSTEM_PROMPT = `你是一个农业育秧专家，请以专业、简明、友好的方式回答用户关于育秧、育苗、温室管理、营养调控、病虫害防治等方面的问题。`;
 
@@ -24,25 +18,47 @@ router.post("/", async (req, res) => {
     return res.status(400).json({ error: "缺少聊天内容" });
   }
 
-  let prompt = SYSTEM_PROMPT;
+  const messages: any[] = [
+    { role: "system", content: SYSTEM_PROMPT }
+  ];
+
   if (Array.isArray(history) && history.length > 0) {
-    const historyText = history
-      .map((item: any) => {
-        if (item.role === "assistant") return `专家: ${item.content}`;
-        if (item.role === "user") return `用户: ${item.content}`;
-        return `${item.role}: ${item.content}`;
-      })
-      .join("\n");
-    prompt += `\n\n以下是当前对话历史：\n${historyText}`;
+    history.forEach((item: any) => {
+      messages.push({
+        role: item.role === "assistant" || item.role === "system" ? "assistant" : "user",
+        content: item.content
+      });
+    });
   }
-  prompt += `\n\n用户: ${content}\n专家:`;
+  
+  messages.push({ role: "user", content });
 
   try {
-    const chat = ai.chats.create({ model: "gemini-1.5-pro", config: { temperature: 0.3, maxOutputTokens: 512 } });
-    const response = await chat.sendMessage({ message: prompt });
-    res.json({ reply: response.text?.trim() || "抱歉，未能获得有效回答。" });
+    const response = await fetch(DOUBAO_BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${DOUBAO_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: MODEL_ENDPOINT_ID,
+        messages: messages,
+        temperature: 0.3,
+        max_tokens: 512
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Doubao API error:", errorText);
+      return res.status(response.status).json({ error: `API 请求失败 (${response.status}): ${errorText}` });
+    }
+
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content || "抱歉，未能获得有效回答。";
+    res.json({ reply: reply.trim() });
   } catch (error) {
-    console.error("Gemini chat error:", error);
+    console.error("Doubao chat error:", error);
     const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
     res.status(500).json({ error: `AI 服务调用失败：${errorMessage}` });
   }
