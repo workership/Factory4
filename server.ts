@@ -28,11 +28,11 @@ async function startServer() {
     });
   }
 
-  const server = app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", async () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
 
     // 启动 HTTP 服务后，将我们自带的 Aedes MQTT Broker 挂载上去
-    attachMqttBroker(server);
+    await attachMqttBroker(server);
 
     // 挂载完毕后，启动我们自己的订阅端客户端去连接它
     const mqttClient = initMqtt();
