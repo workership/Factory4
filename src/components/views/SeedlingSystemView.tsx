@@ -4,13 +4,13 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Cpu, 
-  Thermometer, 
-  Sun, 
-  Droplets, 
-  Wind, 
-  RotateCcw, 
+import {
+  Cpu,
+  Thermometer,
+  Sun,
+  Droplets,
+  Wind,
+  RotateCcw,
   Zap,
   Activity,
   Sprout,
@@ -172,7 +172,7 @@ export function SeedlingSystemView() {
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-8 self-start flex items-center gap-2">
               <Network className="w-4 h-4 text-purple-400" /> 环境特征向量空间
             </h3>
-            
+
             <div className="w-full h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
@@ -223,11 +223,11 @@ export function SeedlingSystemView() {
           <div className="flex-1 bg-[#161B26] border border-white/5 rounded-3xl p-8 space-y-8 overflow-y-auto custom-scrollbar">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Gauge className="w-5 h-5 text-blue-500" /> 实时修正执行器
+                <Gauge className="w-5 h-5 text-blue-500" /> 基于XG-Boost预测结果的修正控制器
               </h3>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-500 font-bold uppercase">人工干预模式</span>
-                <div 
+                <span className="text-[10px] text-gray-500 font-bold uppercase">人工干预</span>
+                <div
                   className={cn(
                     "w-8 h-4 rounded-full relative cursor-pointer transition-colors",
                     Object.values(overrides).some(v => v !== null) ? "bg-orange-500" : "bg-gray-700"
@@ -243,38 +243,38 @@ export function SeedlingSystemView() {
             </div>
 
             <div className="grid grid-cols-2 gap-6">
-              <ControlNode 
-                label="加温补偿" 
-                active={actions.heating} 
-                icon={Thermometer} 
-                color="rose" 
+              <ControlNode
+                label="加温补偿"
+                active={actions.heating}
+                icon={Thermometer}
+                color="rose"
                 value={`${env.temp.toFixed(1)}°C`}
                 isOverridden={overrides.heating !== null}
                 onToggle={() => setOverrides(prev => ({ ...prev, heating: prev.heating === null ? !actions.heating : (prev.heating ? false : null) }))}
               />
-              <ControlNode 
-                label="补光增强" 
-                active={actions.lighting} 
-                icon={Sun} 
-                color="orange" 
+              <ControlNode
+                label="补光增强"
+                active={actions.lighting}
+                icon={Sun}
+                color="orange"
                 value={`${env.light.toFixed(0)} Lux`}
                 isOverridden={overrides.lighting !== null}
                 onToggle={() => setOverrides(prev => ({ ...prev, lighting: prev.lighting === null ? !actions.lighting : (prev.lighting ? false : null) }))}
               />
-              <ControlNode 
-                label="湿度调节" 
-                active={actions.humidifying} 
-                icon={Droplets} 
-                color="blue" 
+              <ControlNode
+                label="湿度调节"
+                active={actions.humidifying}
+                icon={Droplets}
+                color="blue"
                 value={`${env.humidity.toFixed(1)}%`}
                 isOverridden={overrides.humidifying !== null}
                 onToggle={() => setOverrides(prev => ({ ...prev, humidifying: prev.humidifying === null ? !actions.humidifying : (prev.humidifying ? false : null) }))}
               />
-              <ControlNode 
-                label="精准灌溉" 
-                active={actions.irrigating} 
-                icon={Wind} 
-                color="emerald" 
+              <ControlNode
+                label="精准灌溉"
+                active={actions.irrigating}
+                icon={Wind}
+                color="emerald"
                 value={`${env.soilMoisture.toFixed(1)}%`}
                 isOverridden={overrides.irrigating !== null}
                 onToggle={() => setOverrides(prev => ({ ...prev, irrigating: prev.irrigating === null ? !actions.irrigating : (prev.irrigating ? false : null) }))}
@@ -284,10 +284,10 @@ export function SeedlingSystemView() {
             <div className="space-y-6 pt-4 border-t border-white/5">
               <h4 className="text-[10px] text-gray-500 font-black uppercase tracking-widest">控制决策阈值设定</h4>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                <ThresholdSlider label="目标温度" value={thresholds.temp} min={15} max={35} unit="°C" onChange={(v) => setThresholds({...thresholds, temp: v})} />
-                <ThresholdSlider label="目标光照" value={thresholds.light} min={200} max={800} unit="Lux" onChange={(v) => setThresholds({...thresholds, light: v})} />
-                <ThresholdSlider label="目标湿度" value={thresholds.humidity} min={40} max={90} unit="%" onChange={(v) => setThresholds({...thresholds, humidity: v})} />
-                <ThresholdSlider label="目标水分" value={thresholds.moisture} min={20} max={60} unit="%" onChange={(v) => setThresholds({...thresholds, moisture: v})} />
+                <ThresholdSlider label="目标温度" value={thresholds.temp} min={15} max={35} unit="°C" onChange={(v) => setThresholds({ ...thresholds, temp: v })} />
+                <ThresholdSlider label="目标光照" value={thresholds.light} min={200} max={800} unit="Lux" onChange={(v) => setThresholds({ ...thresholds, light: v })} />
+                <ThresholdSlider label="目标湿度" value={thresholds.humidity} min={40} max={90} unit="%" onChange={(v) => setThresholds({ ...thresholds, humidity: v })} />
+                <ThresholdSlider label="目标水分" value={thresholds.moisture} min={20} max={60} unit="%" onChange={(v) => setThresholds({ ...thresholds, moisture: v })} />
               </div>
             </div>
 
@@ -297,13 +297,13 @@ export function SeedlingSystemView() {
                 <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">系统反应灵敏度</span>
                 <span className="text-xs font-bold text-emerald-400">{(modelMetrics.sensitivity * 100).toFixed(0)}%</span>
               </div>
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01" 
-                value={modelMetrics.sensitivity} 
-                onChange={(e) => setModelMetrics({...modelMetrics, sensitivity: parseFloat(e.target.value)})}
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={modelMetrics.sensitivity}
+                onChange={(e) => setModelMetrics({ ...modelMetrics, sensitivity: parseFloat(e.target.value) })}
                 className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-500"
               />
             </div>
@@ -408,7 +408,7 @@ function FeatureImportance({ label, value, color }: any) {
 
 function ControlNode({ label, active, icon: Icon, color, value, isOverridden, onToggle }: any) {
   return (
-    <div 
+    <div
       onClick={onToggle}
       className={cn(
         "p-5 rounded-2xl border transition-all duration-500 flex flex-col gap-4 cursor-pointer group",
@@ -442,12 +442,12 @@ function ThresholdSlider({ label, value, min, max, unit, onChange }: any) {
         <span className="text-[9px] text-gray-500 font-bold uppercase">{label}</span>
         <span className="text-[10px] font-mono text-white">{value.toFixed(1)}{unit}</span>
       </div>
-      <input 
-        type="range" 
-        min={min} 
-        max={max} 
-        step="0.1" 
-        value={value} 
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step="0.1"
+        value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
         className="w-full h-1 bg-white/5 rounded-lg appearance-none cursor-pointer accent-blue-500"
       />

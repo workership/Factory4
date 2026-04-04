@@ -4,12 +4,12 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  Info, 
-  Settings, 
-  Calculator, 
-  CheckCircle2, 
+import {
+  LayoutDashboard,
+  Info,
+  Settings,
+  Calculator,
+  CheckCircle2,
   PlusCircle,
   TrendingUp,
   Zap,
@@ -23,17 +23,17 @@ import {
   Coins
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { 
-  BasicConfig, 
-  ClientConfig, 
-  ServerConfig, 
+import {
+  BasicConfig,
+  ClientConfig,
+  ServerConfig,
   ServerConfigSection,
-  Task 
+  Task
 } from '../../types';
-import { 
-  DEFAULT_BASIC_CONFIG, 
-  DEFAULT_CLIENT_CONFIG, 
-  DEFAULT_SERVER_CONFIG 
+import {
+  DEFAULT_BASIC_CONFIG,
+  DEFAULT_CLIENT_CONFIG,
+  DEFAULT_SERVER_CONFIG
 } from '../../constants';
 import { calculateTaskResults } from '../../services/calculationService';
 
@@ -45,7 +45,7 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
   const [basicConfig, setBasicConfig] = useState<BasicConfig>(DEFAULT_BASIC_CONFIG);
   const [clientConfig, setClientConfig] = useState<ClientConfig>(DEFAULT_CLIENT_CONFIG);
   const [serverConfig, setServerConfig] = useState<ServerConfig>(DEFAULT_SERVER_CONFIG);
-  
+
   const [results, setResults] = useState<any>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -74,6 +74,7 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
       seedlings: val,
       area: Number((val / SEEDS_PER_MU).toFixed(2))
     });
+    setResults(null);
   };
 
   const handleAreaChange = (val: number) => {
@@ -82,6 +83,7 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
       area: val,
       seedlings: Number((val * SEEDS_PER_MU).toFixed(2))
     });
+    setResults(null);
   };
 
   const handleConfirmSubmit = async () => {
@@ -127,6 +129,7 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
         }
       }
     }));
+    setResults(null);
   };
 
   return (
@@ -146,7 +149,7 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
           <div className="bg-[#161B26] border border-white/5 rounded-3xl p-6 space-y-4">
             <div className="flex items-center gap-2 text-blue-400">
               <Info className="w-5 h-5" />
-              <h3 className="font-bold text-sm uppercase tracking-widest">系统基本介绍</h3>
+              <h3 className="font-bold text-sm uppercase tracking-widest">系统介绍</h3>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
               本系统集成先进的工业4.0数字孪生技术与XGBoost非线性损耗模型，为寒地立体育秧工厂提供全方位的成本核算、资源调度与稳健性分析。
@@ -159,14 +162,14 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
               <Calculator className="w-5 h-5" />
               <h3 className="font-bold text-sm uppercase tracking-widest">用户端输入 (Client)</h3>
             </div>
-            
+
             <div className="space-y-4">
               <InputGroup label="水稻种子量 (kg)" value={clientConfig.seedlings} onChange={handleSeedlingsChange} />
               <div className="space-y-1.5">
                 <label className="text-xs text-gray-400">水稻品种</label>
-                <select 
+                <select
                   value={clientConfig.selected_type}
-                  onChange={(e) => setClientConfig({...clientConfig, selected_type: e.target.value})}
+                  onChange={(e) => { setClientConfig({ ...clientConfig, selected_type: e.target.value }); setResults(null); }}
                   className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all"
                 >
                   {clientConfig.seedings_type.map(t => (
@@ -176,7 +179,7 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
               </div>
               <InputGroup label="播种面积 (亩)" value={clientConfig.area} onChange={handleAreaChange} />
 
-              <button 
+              <button
                 onClick={handleCalculate}
                 disabled={isCalculating}
                 className="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center justify-center gap-2"
@@ -200,8 +203,8 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
               {/* Basic Config */}
               <ConfigSection title="基础能源单价">
                 <div className="grid grid-cols-2 gap-4">
-                  <InputGroup label="电价 (元/度)" value={basicConfig.electricity} onChange={(v) => setBasicConfig({...basicConfig, electricity: v})} step={0.01} />
-                  <InputGroup label="水价 (元/吨)" value={basicConfig.water} onChange={(v) => setBasicConfig({...basicConfig, water: v})} step={0.1} />
+                  <InputGroup label="电价 (元/度)" value={basicConfig.electricity} onChange={(v) => { setBasicConfig({ ...basicConfig, electricity: v }); setResults(null); }} step={0.01} />
+                  <InputGroup label="水价 (元/吨)" value={basicConfig.water} onChange={(v) => { setBasicConfig({ ...basicConfig, water: v }); setResults(null); }} step={0.1} />
                 </div>
               </ConfigSection>
 
@@ -224,10 +227,10 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
                   seed_fee: '种子单价 (元/kg)',
                   soaking_pool: '浸种池原值 (元)',
                   soaking_pool_power: '处理能力 (kg/h)',
-                  soaking_pool_number: '池体数量',
+                  soaking_pool_number: '浸种池数量',
                   growing_medium: '育秧土消耗 (kg/kg)',
                   electric_assumptions: '电耗系数 (度/kg)',
-                  seeding_tray: '秧盘配比 (个/kg)',
+                  seeding_rack_capacity: '育秧架容量 (株/盘)',
                   oil_preparation: '燃油消耗 (L/kg)',
                   humidifier: '加湿器原值 (元)',
                   thermostatic_system: '恒温系统原值 (元)',
@@ -263,11 +266,11 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
                           <div className="text-[9px] text-gray-600 font-black uppercase tracking-widest">{subLabels[subKey] || subKey}</div>
                           <div className="grid grid-cols-2 gap-3">
                             {Object.entries(sub as Record<string, number>).map(([key, val]) => (
-                              <InputGroup 
-                                key={key} 
-                                label={keyLabels[key] || key} 
-                                value={val} 
-                                onChange={(v) => updateServerConfig(sectionKey as keyof ServerConfig, subKey as keyof ServerConfigSection, key, v)} 
+                              <InputGroup
+                                key={key}
+                                label={keyLabels[key] || key}
+                                value={val}
+                                onChange={(v) => updateServerConfig(sectionKey as keyof ServerConfig, subKey as keyof ServerConfigSection, key, v)}
                                 step={val < 1 ? 0.001 : 1}
                               />
                             ))}
@@ -291,22 +294,22 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
             </div>
           )}
 
-          {results && (
+          {results ? (
             <>
               {/* User View */}
               <div className="bg-gradient-to-br from-blue-600 to-blue-800 border border-blue-500/20 rounded-3xl p-8 text-white space-y-6 shadow-xl shadow-blue-600/20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 opacity-80">
                     <Package className="w-5 h-5" />
-                    <h3 className="font-bold text-sm uppercase tracking-widest">用户决策概览</h3>
+                    <h3 className="font-bold text-sm uppercase tracking-widest">决策结果</h3>
                   </div>
                   <div className="px-3 py-1 rounded-full bg-white/10 text-[10px] font-bold uppercase tracking-widest">
                     方案 ID: {Math.floor(Math.random() * 10000)}
                   </div>
                 </div>
-                
+
                 <div className="space-y-1">
-                  <div className="text-xs opacity-70">预估总生产费用</div>
+                  <div className="text-xs opacity-70">预估总育秧成本</div>
                   <div className="text-5xl font-black tracking-tighter">¥ {results.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                 </div>
 
@@ -341,13 +344,13 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
                 </div>
 
                 <div className="pt-6 border-t border-white/5">
-                  <button 
+                  <button
                     onClick={handleConfirmSubmit}
                     disabled={isSubmitted}
                     className={cn(
                       "w-full py-5 rounded-2xl flex items-center justify-center gap-3 font-bold text-sm transition-all duration-300 shadow-lg",
-                      isSubmitted 
-                        ? "bg-emerald-600 text-white shadow-emerald-600/20" 
+                      isSubmitted
+                        ? "bg-emerald-600 text-white shadow-emerald-600/20"
                         : "bg-white text-black hover:bg-gray-100 shadow-white/10"
                     )}
                   >
@@ -366,6 +369,14 @@ export function DashboardView({ onAddTask }: DashboardViewProps) {
                 </div>
               </div>
             </>
+          ) : (
+            !isCalculating && (
+              <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-3xl p-8 text-center bg-[#161B26]/50">
+                <Database className="w-12 h-12 text-gray-600 mb-4" />
+                <h3 className="text-white font-bold mb-2">配置已修改，等待同步计算</h3>
+                <p className="text-xs text-gray-500 max-w-[200px] leading-relaxed">参数变动可能会极大影响单位能耗与成本。请点击左侧“同步决策方案”获取最新的孪生预估模型数据。</p>
+              </div>
+            )
           )}
         </div>
       </div>
@@ -389,8 +400,8 @@ function InputGroup({ label, value, onChange, step = 1 }: { label: string, value
   return (
     <div className="space-y-1.5">
       <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{label}</label>
-      <input 
-        type="number" 
+      <input
+        type="number"
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}

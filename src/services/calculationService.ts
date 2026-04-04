@@ -31,9 +31,11 @@ export function calculateTaskResults(
 
   // 2. Soil & Seeds (播种合盘)
   const soil = server.soil_preparation_and_seeds;
+  // 假设 1kg 约等于 40000 枚水稻种子
+  const SEEDS_PER_KG = 40000;
   const soilUsed = S * soil.flexible.growing_medium;
   const soilCost = soilUsed * 0.8; // 0.8 yuan/kg for soil
-  const trayAmount = S * soil.flexible.seeding_tray;
+  const trayAmount = (S * SEEDS_PER_KG) / (soil.flexible.seeding_rack_capacity || 4000);
   const trayCost = trayAmount * 0.5; // 0.5 yuan/tray (depreciation/cleaning)
   const oilUsed = S * soil.flexible.oil_preparation;
   const oilCost = oilUsed * 7.8; 

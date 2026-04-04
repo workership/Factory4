@@ -13,8 +13,8 @@ export const DEFAULT_BASIC_CONFIG: BasicConfig = {
 
 export const DEFAULT_CLIENT_CONFIG: ClientConfig = {
   seedlings: 100, // Default value if not specified
-  seedings_type: ["东农425", "东农428", "东农429"],
-  selected_type: "东农425",
+  seedings_type: ["中科发5号", "稻花香2号", "松粳22", "垦川102"],
+  selected_type: "中科发5号",
   area: 1000,
 };
 
@@ -39,7 +39,7 @@ export const DEFAULT_SERVER_CONFIG: ServerConfig = {
     flexible: {
       growing_medium: 12.0,
       electric_assumptions: 0.05,
-      seeding_tray: 8.0,
+      seeding_rack_capacity: 4000.0,
       oil_preparation: 0.02,
     },
     fixed: {

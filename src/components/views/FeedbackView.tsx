@@ -128,7 +128,7 @@ export function FeedbackView() {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="向农业育秧专家提问，例如：如何优化番茄育苗光照方案？"
+            placeholder="向农业育秧专家提问，例如：如何优化水稻育苗温度方案？"
             className="w-full bg-[#161B26] border border-white/10 rounded-2xl p-5 pr-16 text-sm text-white focus:outline-none focus:border-blue-500 transition-all min-h-[110px] resize-none custom-scrollbar"
           />
           <button

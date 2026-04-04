@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -11,29 +11,44 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 export function MonitoringView() {
   const [stats, setStats] = useState({
     temp: 24.2,
-    utilization: 68.5,
-    energy: 1.25,
+    humidity: 68.5,
+    co2: 420,
+    light: 500,
     status: 'Running'
   });
 
   const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const newStats = {
-        temp: 24 + Math.random() * 2,
-        utilization: 60 + Math.random() * 20,
-        energy: 1.1 + Math.random() * 0.4,
-        status: Math.random() > 0.95 ? 'Idle' : 'Running'
-      };
-      setStats(newStats);
-      
-      setHistory(prev => {
-        const newHistory = [...prev, { time: new Date().toLocaleTimeString(), value: newStats.utilization }];
-        if (newHistory.length > 20) return newHistory.slice(1);
-        return newHistory;
-      });
-    }, 1000);
+    const fetchSensors = async () => {
+      try {
+        const res = await fetch('/api/sensors/summary');
+        const data = await res.json();
+
+        setStats(prev => {
+          const newStats = {
+            temp: data.currentTemp || prev.temp,
+            humidity: data.currentHumidity || prev.humidity,
+            co2: data.currentCO2 || prev.co2,
+            light: data.currentLight || prev.light,
+            status: 'Running'
+          };
+
+          setHistory(h => {
+            const newHistory = [...h, { time: new Date().toLocaleTimeString(), value: newStats.temp }];
+            if (newHistory.length > 20) return newHistory.slice(1);
+            return newHistory;
+          });
+
+          return newStats;
+        });
+      } catch (err) {
+        console.error("Failed to fetch sensor data", err);
+      }
+    };
+
+    fetchSensors();
+    const interval = setInterval(fetchSensors, 2000);
 
     return () => clearInterval(interval);
   }, []);
@@ -44,7 +59,7 @@ export function MonitoringView() {
         <div className="flex items-center gap-4">
           <div className="w-1.5 h-8 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
           <div className="flex flex-col">
-            <h2 className="text-2xl font-black text-white tracking-tight leading-none">实时设备监控</h2>
+            <h2 className="text-2xl font-black text-white tracking-tight leading-none">实时状态</h2>
             <span className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Live Telemetry & System Health</span>
           </div>
         </div>
@@ -55,30 +70,30 @@ export function MonitoringView() {
       </div>
 
       <div className="grid grid-cols-4 gap-6">
-        <StatCard icon={Thermometer} label="当前温度" value={`${stats.temp.toFixed(1)}°C`} trend={stats.temp > 25 ? 'High' : 'Normal'} color="orange" />
-        <StatCard icon={Cpu} label="设备利用率" value={`${stats.utilization.toFixed(1)}%`} trend="+1.2%" color="blue" />
-        <StatCard icon={Zap} label="实时能耗" value={`${stats.energy.toFixed(2)} kWh`} trend="-0.4%" color="emerald" />
-        <StatCard icon={ShieldCheck} label="系统状态" value={stats.status} trend="Stable" color="emerald" />
+        <StatCard icon={Thermometer} label="当前温度" value={`${stats.temp.toFixed(1)}°C`} trend={stats.temp > 28 ? 'High' : 'Normal'} color="orange" />
+        <StatCard icon={Wind} label="环境湿度" value={`${stats.humidity.toFixed(1)}%`} trend={stats.humidity < 40 ? 'Low' : 'Normal'} color="blue" />
+        <StatCard icon={Activity} label="二氧化碳浓度" value={`${stats.co2.toFixed(0)} ppm`} trend="Stable" color="emerald" />
+        <StatCard icon={Zap} label="光照强度" value={`${stats.light.toFixed(0)} lx`} trend="Active" color="amber" />
       </div>
 
       <div className="flex-1 grid grid-cols-3 gap-8 overflow-hidden">
         <div className="col-span-2 bg-[#161B26] border border-white/5 rounded-3xl p-8 space-y-6 flex flex-col">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <Activity className="w-5 h-5 text-blue-500" /> 设备利用率趋势 (Real-time)
+            <Activity className="w-5 h-5 text-blue-500" /> 温度波动趋势 (Real-time)
           </h3>
           <div className="flex-1 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={history}>
                 <defs>
                   <linearGradient id="colorUtil" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                 <XAxis dataKey="time" hide />
-                <YAxis stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} domain={[0, 100]} />
-                <Tooltip 
+                <YAxis stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
+                <Tooltip
                   contentStyle={{ backgroundColor: '#161B26', border: '1px solid #ffffff10', borderRadius: '12px' }}
                   itemStyle={{ color: '#fff', fontSize: '12px' }}
                 />
@@ -90,7 +105,7 @@ export function MonitoringView() {
 
         <div className="bg-[#161B26] border border-white/5 rounded-3xl p-8 space-y-6 overflow-y-auto custom-scrollbar">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-orange-500" /> 关键工位状态
+            <AlertCircle className="w-5 h-5 text-orange-500" /> 流水线运转情况
           </h3>
           <div className="space-y-4">
             <StationStatus name="播种线 A-01" status="Running" health={98} />

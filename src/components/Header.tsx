@@ -21,14 +21,14 @@ export function Header() {
           <span className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Digital Twin Control Center</span>
         </div>
       </div>
-      
+
       <div className="flex items-center gap-6">
         <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/5 border border-emerald-500/10">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
           <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Secure Connection</span>
         </div>
         <div className="h-4 w-[1px] bg-white/10 mx-2" />
-        <span className="text-[10px] text-gray-500 font-mono font-bold">V4.5.0-STABLE</span>
+        <span className="text-[10px] text-gray-500 font-mono font-bold">V5.1.0-STABLE</span>
       </div>
     </header>
   );
