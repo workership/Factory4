@@ -3,7 +3,7 @@ import { logAI } from "../services/logger";
 
 const router = Router();
 
-const DOUBAO_API_KEY = "83692209-5668-4f18-8d9e-bce96b5c9a24";
+const DOUBAO_API_KEY = process.env.DOUBAO_API_KEY || "";
 const DOUBAO_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3/chat/completions";
 
 // 注意：火山引擎（豆包）需要使用 Endpoint ID 作为 model 参数。
@@ -24,6 +24,9 @@ router.post("/", async (req, res) => {
                || req.socket.remoteAddress
                || "unknown";
   const { content, history } = req.body;
+  if (!DOUBAO_API_KEY) {
+    return res.status(500).json({ error: "服务端未配置 DOUBAO_API_KEY（请检查 .env）" });
+  }
   if (!content || typeof content !== "string") {
     return res.status(400).json({ error: "缺少聊天内容" });
   }
